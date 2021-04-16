@@ -1363,3 +1363,17 @@ def test_osbs_builder_with_rhpam(tmpdir, caplog):
     USER 1001
 ## /
 ## END target image""" in dockerfile
+    container_path = os.path.join(str(tmpdir), 'rhpam', 'target', 'image', 'container.yaml')
+    assert os.path.exists(container_path) is True
+    with open(container_path, 'r') as _file:
+        containerfile = _file.read()
+        print("\n" + containerfile + "\n")
+        assert """image_build_method: imagebuilder
+platforms:
+  only:
+  - x86_64
+remote_source:
+  pkg_managers:
+  - gomod
+  ref: db4a5d18f5f52a64083d8f1bd1776ad60a46904c
+  repo: https://github.com/kiegroup/rhpam-kogito-operator"""

@@ -51,6 +51,12 @@ class OSBSGenerator(Generator):
         container = self.image.get('osbs', {}).get('configuration', {}).get('container')
 
         if not container:
+            # No container definition in current image; check if one in multi-stage.
+            for i in self.builder_images:
+                container = i.get('osbs', {}).get('configuration', {}).get('container', {})
+                if container:
+                    break
+        if not container:
             return
 
         if not os.path.exists(os.path.dirname(container_f)):
