@@ -1305,6 +1305,20 @@ def test_osbs_builder_with_rhpam(tmpdir, caplog):
     COPY $REMOTE_SOURCE $REMOTE_SOURCE_DIR
     WORKDIR $REMOTE_SOURCE_DIR/app
 
+###### START module 'org.kie.kogito.builder:7.11'
+###### \\
+        # Copy 'org.kie.kogito.builder' module general artifacts to '/workspace/' destination
+        COPY \\
+            main.go \\
+            /workspace/
+        # Copy 'org.kie.kogito.builder' module content
+        COPY modules/org.kie.kogito.builder /tmp/scripts/org.kie.kogito.builder
+        # Custom scripts from 'org.kie.kogito.builder' module
+        USER root
+        RUN [ "sh", "-x", "/tmp/scripts/org.kie.kogito.builder/install.sh" ]
+###### /
+###### END module 'org.kie.kogito.builder:7.11'
+
 ###### START image 'operator-builder:7.11'
 ###### \\
         # Set 'operator-builder' image defined environment variables
@@ -1376,4 +1390,4 @@ remote_source:
   pkg_managers:
   - gomod
   ref: db4a5d18f5f52a64083d8f1bd1776ad60a46904c
-  repo: https://github.com/kiegroup/rhpam-kogito-operator"""
+  repo: https://github.com/kiegroup/rhpam-kogito-operator""" in containerfile
