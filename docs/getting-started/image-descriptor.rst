@@ -3,7 +3,7 @@ Preparing image descriptor
 
 This section will guide you through a very simple example.
 
-1. Using a standard text editor create an empty ``image.yml`` file. It is recommended to use the ``image.yaml`` naming scheme.
+1. Using a standard text editor create an empty ``image.yaml`` file. It is recommended to use the ``image.yaml`` naming scheme.
 2. As described in :doc:`Image Descriptor </descriptor/index>` several values are mandatory. Add the following to the file:
 
 .. code-block:: yaml
