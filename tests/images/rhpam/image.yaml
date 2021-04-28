@@ -4,11 +4,11 @@
   from: "registry.access.redhat.com/ubi8/go-toolset:1.14.12"
   description: "Golang builder image for the RHPAM Kogito Operator"
 
-  # modules:
-  #   repositories:
-  #     - path: modules
-  #   install:
-  #     - name: org.kie.kogito.builder
+  modules:
+    repositories:
+      - path: modules
+    install:
+      - name: org.kie.kogito.builder
 
   osbs:
     configuration:
@@ -46,12 +46,6 @@
       dest: /usr/local/bin
 
   osbs:
-    configuration:
-      container:
-        image_build_method: imagebuilder
-        platforms:
-          only:
-            - x86_64
     extra_dir: osbs-extra
     repository:
       name: containers/rhpam-7-kogito-operator
