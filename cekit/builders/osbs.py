@@ -115,9 +115,12 @@ class OSBSBuilder(Builder):
                           for a in all_artifacts if not isinstance(a, (_UrlResource, _PlainResource, _ImageContentResource))]
         # When plain artifact was handled using lookaside cache, we need to add it too
         # TODO Rewrite this!
-
         self.artifacts += [a.target
                            for a in all_artifacts if isinstance(a, _PlainResource) and a.get('lookaside')]
+        # Handle lookaside cache for URL based artifacts as well. This may happen if artifacts have been constrained
+        # by fetch_artifact_domains
+        self.artifacts += [a.target
+                           for a in all_artifacts if isinstance(a, _UrlResource) and a.get('lookaside')]
 
         if 'packages' in self.generator.image and 'set_url' in self.generator.image['packages']:
             self._rhpkg_set_url_repos = [x['url']['repository']

@@ -7,6 +7,7 @@ import sys
 
 import click
 
+from cekit.config import default_work_dir
 from cekit.config import Config
 from cekit.errors import CekitError
 from cekit.log import setup_logging
@@ -15,8 +16,6 @@ from cekit.version import __version__
 
 LOGGER = logging.getLogger('cekit')
 CONFIG = Config()
-
-default_work_dir = "~/.cekit"
 
 
 @click.group(context_settings=dict(max_content_width=100))

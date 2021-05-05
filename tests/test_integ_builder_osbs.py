@@ -931,6 +931,21 @@ def test_osbs_builder_with_fetch_artifacts_url_file_creation_5(tmpdir, mocker, c
     tmpdir.join('osbs').join('repo').join(
         'fetch-artifacts-url.yaml').write_text(u'Some content', 'utf8')
 
+    res = mocker.Mock()
+    res.getcode.return_value = 200
+    res.read.side_effect = [b'test', None]
+
+    mocker.patch('cekit.descriptor.resource.urlopen', return_value=res)
+
+    cfgcontents = """
+[common]
+fetch_artifact_domains = https://foo.domain, http://another.domain/path/name
+ssl_verify = False
+    """
+    cfgfile = os.path.join(str(tmpdir), "config")
+    with open(cfgfile, 'w') as _file:
+        _file.write(cfgcontents)
+
     with Chdir(os.path.join(str(tmpdir), 'osbs', 'repo')):
         subprocess.call(["git", "init"])
         subprocess.call(["git", "add", "fetch-artifacts-url.yaml"])
@@ -939,8 +954,9 @@ def test_osbs_builder_with_fetch_artifacts_url_file_creation_5(tmpdir, mocker, c
     descriptor = image_descriptor.copy()
 
     descriptor['artifacts'] = [
-        {'name': 'artifact_name', 'sha256': '123456', 'url': 'https://foo/bar.jar'},
-        {'name': 'second_artifact_name', 'md5': '654321', 'url': 'https://foo/boo.jar'}
+        {'name': 'artifact_name', 'sha256': '123456', 'url': 'https://foo.domain/bar.jar'},
+        {'name': 'another_artifact_name', 'sha256': '654321', 'url': 'http://another.domain/path/name/bar.jar'},
+        {'name': 'not_allowed_in_fetch', 'sha256': '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'url': 'http://another.domain/wrong.jar'}
     ]
 
     run_osbs(descriptor, str(tmpdir), mocker)
@@ -950,10 +966,12 @@ def test_osbs_builder_with_fetch_artifacts_url_file_creation_5(tmpdir, mocker, c
 
     assert len(fetch_artifacts) == 2
     assert fetch_artifacts[0] == {'sha256': '123456',
-                                  'target': 'artifact_name', 'url': 'https://foo/bar.jar'}
-    assert fetch_artifacts[1] == {'md5': '654321',
-                                  'target': 'second_artifact_name', 'url': 'https://foo/boo.jar'}
+                                  'target': 'artifact_name', 'url': 'https://foo.domain/bar.jar'}
+    assert fetch_artifacts[1] == {'sha256': '654321',
+                                  'target': 'another_artifact_name', 'url': 'http://another.domain/path/name/bar.jar'}
 
+    assert "Ignoring http://another.domain/wrong.jar as restricted to ['https://foo.domain', 'http://another.domain/path/name']" in caplog.text
+    assert "Executing '['/usr/bin/rhpkg', 'new-sources', 'not_allowed_in_fetch']'" in caplog.text
     assert "Artifact 'artifact_name' (as URL) added to fetch-artifacts-url.yaml" in caplog.text
 
 
@@ -1287,8 +1305,16 @@ def test_osbs_builder_with_rhpam(tmpdir, caplog):
         os.path.join(str(tmpdir), 'rhpam')
     )
 
-    run_cekit((os.path.join(str(tmpdir), 'rhpam')), parameters=['--redhat', '-v', '--work-dir', str(tmpdir), '--config',
-                                                           'config', 'build', '--dry-run', 'osbs'])
+    cfgcontents = """
+[common]
+redhat = True
+    """
+    cfgfile = os.path.join(str(tmpdir), "config.cfg")
+    with open(cfgfile, 'w') as _file:
+        _file.write(cfgcontents)
+
+    run_cekit((os.path.join(str(tmpdir), 'rhpam')), parameters=['--config', cfgfile, '-v', '--work-dir', str(tmpdir),
+                                                                'build', '--dry-run', 'osbs'])
 
     dockerfile_path = os.path.join(str(tmpdir), 'rhpam', 'target', 'image', 'Dockerfile')
     assert os.path.exists(dockerfile_path) is True

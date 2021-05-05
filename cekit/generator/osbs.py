@@ -3,8 +3,12 @@ import logging
 import os
 import sys
 import tempfile
-
 import yaml
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 from cekit import crypto
 from cekit.config import Config
@@ -73,11 +77,33 @@ class OSBSGenerator(Generator):
         fetch_artifacts_url = []
         url_description = {}
 
+        fetch_domains = config.get('common', 'fetch_artifact_domains')
+
         for image in self.images:
             for artifact in image.all_artifacts:
                 logger.info("Preparing artifact '{}' (of type {})".format(artifact['name'], type(artifact)))
 
+                # We only want to use fetch-artifact-url if
+                # 1. is type _UrlResource
+                # 2. if fetch_artifact_domains configured, URL conforms to that.
+                process_fetch = False
                 if isinstance(artifact, _UrlResource):
+                    if fetch_domains is not None:
+                        fad = fetch_domains.replace(" ", "").split(",")
+                        # Verify if the URL can be used in fetch-artifact-url or now
+                        for d in fad:
+                            u = urlparse(d)
+                            logger.debug("Parsed URL '{}' and path '{}'".format(u.netloc, u.path))
+                            if u.netloc + u.path in artifact['url']:
+                                process_fetch = True
+                        if not process_fetch:
+                            artifact['lookaside'] = True
+                            logger.warning("Ignoring {} as restricted to {}".format(artifact['url'], fad))
+                    else:
+                        # Just process all UrlResource
+                        process_fetch = True
+
+                if process_fetch:
                     intersected_hash = [x for x in crypto.SUPPORTED_HASH_ALGORITHMS if x in artifact]
                     logger.debug("Found checksum markers of {}".format(intersected_hash))
                     if not intersected_hash:

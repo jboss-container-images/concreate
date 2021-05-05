@@ -116,7 +116,7 @@ Description
     This option changes CEKit default options to comply with Red Hat internal infrastructure and policies.
 
     .. tip::
-        Read more about :doc:`Red Hat environment </handbook/redhat>`. 
+        Read more about :doc:`Red Hat environment </handbook/redhat>`.
 Default
     ``False``
 Example
@@ -124,4 +124,21 @@ Example
 
         [common]
         redhat = True
+
+
+OSBS URL Restriction
+^^^^^^^^^^^^^^^^^^^^
+
+Key
+    ``fetch_url_domains``
+Description
+    This option is used during OSBS processing to constrain the files added to ``fetch-artifacts-url``. It may be set to a comma separated list of URLs. If set, each potential URL based artifact to be added to ``fetch-artifacts-url`` must be within one of the URL domain/paths specified by this key. If not set then **all** URLs are added without restriction.
+
+Default
+    not set
+Example
+    .. code-block:: ini
+
+        [common]
+        fetch_url_domains = https://www.foo.bar/my-path,https://www.example.com
 

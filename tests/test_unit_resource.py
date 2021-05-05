@@ -7,7 +7,6 @@ from cekit.descriptor import Image, Overrides
 from cekit.descriptor.resource import create_resource
 from cekit.config import Config
 from cekit.errors import CekitError
-from cekit.tools import Chdir
 
 try:
     from unittest.mock import call
@@ -337,7 +336,7 @@ def test_copy_plain_resource_from_brew(mocker, tmpdir):
     res.copy(str(tmpdir))
 
     mock_get_brew_url.assert_called_once_with('5b9164ad6f496d9dee12ec7634ce253f')
-    res._Resource__substitute_cache_url.call_count == 0
+    assert res._Resource__substitute_cache_url.call_count == 0
     urlopen_class_mock.assert_called_with('http://cache/abc', context=ctx)
 
 

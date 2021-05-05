@@ -150,7 +150,7 @@ class Repository(Descriptor):
         if 'url' not in descriptor:
             descriptor['url'] = {}
 
-        # we dont want to merge any of theese
+        # we don't want to merge any of these
         self.skip_merging = ['rpm',
                              'id',
                              'url']
